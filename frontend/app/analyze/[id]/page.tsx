@@ -383,35 +383,8 @@ function PerformanceReportContent() {
               targetRaga={targetRaga}
               title={`F0 Pitch Trajectory — Raga ${targetRaga}`}
               subtitle="Extracted vocal fundamental frequency vs. nominal swara intervals"
-              height={320}
+              height={380}
             />
-
-            {/* Ornamentation Awareness Section */}
-            <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-amber-200/80 shadow-xs">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-4 h-4 text-amber-600" />
-                <h3 className="text-sm font-bold text-slate-900">Ornamentation &amp; Continuous Glides</h3>
-                <span className="text-[10px] font-mono text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300 font-semibold">
-                  Non-error expressive segmentation
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 mb-4">
-                The MIR engine distinguishes intentional expressive movements (Meend, Gamak, Kan-swar) from pitch instability.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {detectedOrnaments.map((orn, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-xs">
-                    <div className="flex items-center justify-between text-amber-900 font-bold mb-1">
-                      <span>{orn.type}</span>
-                      <span className="text-[10px] font-mono text-slate-500">{orn.start_time}s</span>
-                    </div>
-                    <div className="text-slate-800 font-mono text-[11px] mb-1 font-semibold">{orn.swaras}</div>
-                    <div className="text-slate-600 text-[10px]">{orn.smoothness || orn.oscillations || orn.note}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
         </div>
