@@ -396,31 +396,31 @@ async def analyze_vocal_performance(
     else:
         combined_feedback = feedback_res["feedback_text"] + "\n\n" + master_comparison["master_critique"]
 
-    # 9. Persist session to relational database
-    user_id = current_user.id if current_user else 1
-    try:
-        practice_sess = PracticeSession(
-            id=session_id,
-            user_id=user_id,
-            raga_name=top_raga_name,
-            audio_url=f"/uploads/{os.path.basename(active_path)}" if active_path else None,
-            duration_seconds=round(duration_sec, 2),
-            overall_score=scores["overall_score"],
-            pitch_accuracy=scores["pitch_score"],
-            swara_accuracy=scores["swara_score"],
-            shruti_accuracy=scores["shruti_score"],
-            raga_accuracy=scores["raga_score"],
-            tonic_stability=scores["tonic_score"],
-            tonic_used_hz=sa_hz,
-            tonic_swara=pitch_res["tonic"]["nearest_western_note"],
-            feedback_summary=combined_feedback[:250] + "...",
-            feedback_json=feedback_res,
-            recommendations_json=feedback_res["recommendations"],
-        )
-        db.add(practice_sess)
-        await db.commit()
-    except Exception as e:
-        print(f"Session save note: {e}")
+    # 9. Persist session to relational database only for authenticated users
+    if current_user:
+        try:
+            practice_sess = PracticeSession(
+                id=session_id,
+                user_id=current_user.id,
+                raga_name=top_raga_name,
+                audio_url=f"/uploads/{os.path.basename(active_path)}" if active_path else None,
+                duration_seconds=round(duration_sec, 2),
+                overall_score=scores["overall_score"],
+                pitch_accuracy=scores["pitch_score"],
+                swara_accuracy=scores["swara_score"],
+                shruti_accuracy=scores["shruti_score"],
+                raga_accuracy=scores["raga_score"],
+                tonic_stability=scores["tonic_score"],
+                tonic_used_hz=sa_hz,
+                tonic_swara=pitch_res["tonic"]["nearest_western_note"],
+                feedback_summary=combined_feedback[:250] + "...",
+                feedback_json=feedback_res,
+                recommendations_json=feedback_res["recommendations"],
+            )
+            db.add(practice_sess)
+            await db.commit()
+        except Exception as e:
+            print(f"Session save note: {e}")
 
     # Build detected swaras list
     detected_swaras = []

@@ -71,25 +71,8 @@ interface SwaraState {
 export const useSwaraStore = create<SwaraState>()(
   persist(
     (set) => ({
-      user: {
-        id: 2,
-        name: "Om Mane",
-        email: "student@swaragpt.ai",
-        role: "student",
-        profile: {
-          experience_level: "Intermediate",
-          tradition: "Hindustani",
-          preferred_tonic: "C3",
-          preferred_tonic_hz: 130.81,
-          daily_goal_minutes: 25,
-          target_ragas: ["Yaman", "Bhupali", "Bhairav"],
-          strong_swaras: ["Sa", "Pa", "Shuddha Re"],
-          weak_swaras: ["Shuddha Ga", "Tivra Ma"],
-          current_streak_days: 7,
-          total_practice_minutes: 340,
-        }
-      },
-      token: "demo-jwt-token-active",
+      user: null,
+      token: null,
       selectedTonic: "C#3",
       selectedTonicHz: 138.59,
       selectedRaga: "Yaman",
@@ -109,6 +92,18 @@ export const useSwaraStore = create<SwaraState>()(
     }),
     {
       name: 'swara-storage',
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        if (!version || version < 2) {
+          return {
+            ...persistedState,
+            user: null,
+            token: null,
+            lastAnalysis: null,
+          };
+        }
+        return persistedState;
+      },
     }
   )
 );

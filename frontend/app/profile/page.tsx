@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -13,8 +14,8 @@ import { authApi } from '@/lib/api';
 export default function ProfilePage() {
   const { user, setUser, selectedTonic, setSelectedTonic, selectedRaga, setSelectedRaga } = useSwaraStore();
 
-  const [name, setName] = useState(user?.name || 'Om');
-  const [email, setEmail] = useState(user?.email || 'sadhak@swaragpt.ai');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [experience, setExperience] = useState('Intermediate');
   const [tradition, setTradition] = useState('Hindustani');
   const [tonicHz, setTonicHz] = useState(selectedTonic || 138.59);
@@ -76,13 +77,33 @@ export default function ProfilePage() {
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
         
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 pb-4 border-b border-gray-800">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center text-black font-extrabold text-2xl shadow-xl shadow-amber-500/20">
-            {name.charAt(0).toUpperCase()}
+        {!user && (
+          <div className="mb-6 p-5 rounded-2xl bg-amber-50 border border-amber-300 text-slate-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-amber-700 shrink-0" />
+              <div>
+                <span className="font-bold text-slate-900 block text-sm">Viewing as Guest Sadhak</span>
+                <span className="text-slate-600">Sign in to save your sadhana preferences, custom Sa tonic, and practice goals across sessions.</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/login" className="px-4 py-2 rounded-xl bg-amber-600 text-white font-bold text-xs hover:bg-amber-700 shadow-sm transition">
+                Sign In
+              </Link>
+              <Link href="/register" className="px-4 py-2 rounded-xl bg-amber-100 text-amber-950 border border-amber-300 font-bold text-xs hover:bg-amber-200 shadow-2xs transition">
+                Register
+              </Link>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-4 mb-8 pb-4 border-b border-amber-200">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center text-slate-950 font-extrabold text-2xl shadow-md">
+            {(name ? name.charAt(0) : 'G').toUpperCase()}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white font-serif">{name}&apos;s Sadhak Profile</h1>
-            <p className="text-xs text-gray-400 font-mono">{email} • Role: {user?.role || 'Classical Student'}</p>
+            <h1 className="text-2xl font-bold text-slate-900 font-serif">{name ? `${name}'s Sadhak Profile` : 'Guest Sadhak Profile'}</h1>
+            <p className="text-xs text-slate-500 font-mono">{email ? `${email} • ` : ''}Role: {user?.role || 'Classical Student'}</p>
           </div>
         </div>
 

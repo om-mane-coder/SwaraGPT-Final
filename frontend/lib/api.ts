@@ -162,10 +162,12 @@ export const ragasApi = {
 export const progressApi = {
   getSummary: () => api.get('/progress/summary').catch(() => ({
     data: {
-      total_practice_sessions: 14,
-      total_minutes_practiced: 168,
-      average_overall_score: 87.4,
-      ragas_practiced_count: 5
+      total_practice_sessions: 0,
+      total_minutes_practiced: 0,
+      average_overall_score: 0,
+      ragas_practiced_count: 0,
+      current_streak_days: 0,
+      user_name: 'Guest Sadhak'
     }
   })),
   getHistory: () => api.get('/progress/history').catch(() => ({ data: [] })),

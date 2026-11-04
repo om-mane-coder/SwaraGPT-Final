@@ -6,9 +6,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
   Clock, Music, Award, ArrowRight, ArrowLeftRight, 
-  Calendar, CheckCircle, BarChart2, Filter, Layers, CheckSquare, Square
+  Calendar, CheckCircle, BarChart2, Filter, Layers, CheckSquare, Square, Shield, Mic
 } from 'lucide-react';
 import { progressApi } from '@/lib/api';
+import { useSwaraStore } from '@/lib/store';
 
 interface SessionItem {
   id: string;
@@ -21,76 +22,46 @@ interface SessionItem {
   tonic_hz: number;
 }
 
-const SAMPLE_SESSIONS: SessionItem[] = [
-  {
-    id: "sess-101",
-    date: "2026-10-07 19:30",
-    raga: "Yaman",
-    duration_seconds: 180,
-    overall_score: 84.5,
-    pitch_accuracy: 86.0,
-    swara_accuracy: 82.5,
-    tonic_hz: 138.59,
-  },
-  {
-    id: "sess-102",
-    date: "2026-10-06 08:15",
-    raga: "Bhairav",
-    duration_seconds: 120,
-    overall_score: 76.2,
-    pitch_accuracy: 78.0,
-    swara_accuracy: 74.0,
-    tonic_hz: 138.59,
-  },
-  {
-    id: "sess-103",
-    date: "2026-10-04 20:00",
-    raga: "Bhupali",
-    duration_seconds: 240,
-    overall_score: 91.0,
-    pitch_accuracy: 92.5,
-    swara_accuracy: 89.0,
-    tonic_hz: 138.59,
-  },
-  {
-    id: "sess-104",
-    date: "2026-10-02 18:45",
-    raga: "Yaman",
-    duration_seconds: 150,
-    overall_score: 72.0,
-    pitch_accuracy: 71.5,
-    swara_accuracy: 73.0,
-    tonic_hz: 138.59,
-  },
-];
-
 export default function HistoryPage() {
-  const [sessions, setSessions] = useState<SessionItem[]>(SAMPLE_SESSIONS);
+  const { user } = useSwaraStore();
+  const [sessions, setSessions] = useState<SessionItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
 
   useEffect(() => {
-    progressApi.getHistory()
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const mapped = res.data.map((item: any, idx: number) => ({
-            id: item.id || `sess-${idx}`,
-            date: item.created_at ? new Date(item.created_at).toLocaleString() : new Date().toLocaleString(),
-            raga: item.raga_name || item.target_raga || "Yaman",
-            duration_seconds: Math.round(item.duration_seconds || 120),
-            overall_score: item.overall_score || 80,
-            pitch_accuracy: item.pitch_accuracy || 82,
-            swara_accuracy: item.swara_accuracy || 79,
-            tonic_hz: item.tonic_hz || 138.59,
-          }));
-          setSessions(mapped);
-        }
-      })
-      .catch(() => {
-        // Use demo sessions
-      });
-  }, []);
+    if (user) {
+      setLoading(true);
+      progressApi.getHistory()
+        .then((res) => {
+          if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const mapped = res.data.map((item: any, idx: number) => ({
+              id: item.id || `sess-${idx}`,
+              date: item.created_at ? new Date(item.created_at).toLocaleString() : new Date().toLocaleString(),
+              raga: item.raga_name || item.target_raga || "Classical",
+              duration_seconds: Math.round(item.duration_seconds || 120),
+              overall_score: item.overall_score || 80,
+              pitch_accuracy: item.pitch_accuracy || 82,
+              swara_accuracy: item.swara_accuracy || 79,
+              tonic_hz: item.tonic_hz || 138.59,
+            }));
+            setSessions(mapped);
+          } else {
+            setSessions([]);
+          }
+        })
+        .catch(() => {
+          setSessions([]);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setSessions([]);
+      setLoading(false);
+    }
+  }, [user]);
 
   const toggleSelectForCompare = (id: string) => {
     if (selectedForCompare.includes(id)) {
@@ -138,14 +109,15 @@ export default function HistoryPage() {
         </div>
 
         {/* Sessions Table / List */}
-        <div className="glass-card rounded-2xl border border-amber-300 overflow-hidden mb-12 shadow-md">
-          <div className="p-4 bg-[#090D16] border-b border-gray-800 flex items-center justify-between text-xs text-slate-600 font-mono font-medium">
-            <span>Select any 2 sessions to compare Before vs After</span>
-            <span>{sessions.length} Recorded Sessions</span>
-          </div>
+        {sessions.length > 0 ? (
+          <div className="glass-card rounded-2xl border border-amber-300 overflow-hidden mb-12 shadow-md">
+            <div className="p-4 bg-amber-50/80 border-b border-amber-200 flex items-center justify-between text-xs text-slate-600 font-mono font-medium">
+              <span>Select any 2 sessions to compare Before vs After</span>
+              <span>{sessions.length} Recorded Sessions</span>
+            </div>
 
-          <div className="divide-y divide-gray-800/60">
-            {sessions.map((s) => {
+            <div className="divide-y divide-amber-100">
+              {sessions.map((s) => {
               const isSelected = selectedForCompare.includes(s.id);
 
               return (
@@ -221,8 +193,56 @@ export default function HistoryPage() {
                 </div>
               );
             })}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="glass-card rounded-3xl border border-amber-200/80 bg-white/90 p-8 sm:p-12 text-center shadow-sm mb-12">
+            {user ? (
+              <div className="space-y-4 max-w-md mx-auto">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shadow-2xs">
+                  <Music className="w-7 h-7" />
+                </div>
+                <h2 className="text-xl font-bold font-serif text-slate-900">No Riyaz Sessions Recorded Yet</h2>
+                <p className="text-xs sm:text-sm text-slate-600">
+                  You haven&apos;t recorded any vocal sessions yet. Start your daily Riyaz with our live intonation feedback to build your history.
+                </p>
+                <div className="pt-2">
+                  <Link
+                    href="/practice"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 hover:scale-105 transition"
+                  >
+                    <Mic className="w-4 h-4" />
+                    <span>Start First Practice Session</span>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 max-w-md mx-auto">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shadow-2xs">
+                  <Shield className="w-7 h-7" />
+                </div>
+                <h2 className="text-xl font-bold font-serif text-slate-900">Private Practice Archives</h2>
+                <p className="text-xs sm:text-sm text-slate-600">
+                  Each student has an isolated private history. Sign in or create an account to record your singing, maintain streaks, and compare progress over time.
+                </p>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <Link
+                    href="/login"
+                    className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-bold text-xs shadow-2xs transition"
+                  >
+                    Create Account
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Compare Sessions Modal */}
         {showCompareModal && session1 && session2 && (

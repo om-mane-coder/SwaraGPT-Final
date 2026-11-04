@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -11,6 +12,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar 
 } from 'recharts';
 import { progressApi } from '@/lib/api';
+import { useSwaraStore } from '@/lib/store';
 
 const SAMPLE_TREND_DATA = [
   { day: 'Day 1', score: 68, pitch: 70, duration: 15 },
@@ -35,34 +37,53 @@ const SWARA_ACCURACY_DATA = [
 ];
 
 export default function ProgressPage() {
+  const { user } = useSwaraStore();
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
-  const [trendData, setTrendData] = useState(SAMPLE_TREND_DATA);
+  const [trendData, setTrendData] = useState<any[]>([]);
   const [stats, setStats] = useState({
-    totalMinutes: 245,
-    sessionsCount: 18,
-    currentStreak: 6,
-    bestScore: 89,
-    strongestSwara: 'Pancham (Pa)',
-    weakestSwara: 'Gandhar (Ga)'
+    totalMinutes: 0,
+    sessionsCount: 0,
+    currentStreak: 0,
+    bestScore: 0,
+    strongestSwara: '--',
+    weakestSwara: '--'
   });
 
   useEffect(() => {
-    progressApi.getSummary()
-      .then((res) => {
-        if (res.data) {
-          setStats((prev) => ({
-            ...prev,
-            totalMinutes: res.data.total_practice_minutes || prev.totalMinutes,
-            sessionsCount: res.data.total_sessions || prev.sessionsCount,
-            currentStreak: res.data.current_streak_days || prev.currentStreak,
-            bestScore: res.data.best_score || prev.bestScore,
-          }));
-        }
-      })
-      .catch(() => {
-        // Use demo stats
+    if (user) {
+      progressApi.getSummary()
+        .then((res) => {
+          if (res.data) {
+            setStats({
+              totalMinutes: res.data.total_practice_minutes || 0,
+              sessionsCount: res.data.total_sessions_completed || res.data.total_sessions || 0,
+              currentStreak: res.data.current_streak_days || 0,
+              bestScore: Math.round(res.data.best_score || 0),
+              strongestSwara: res.data.strongest_swara || 'Pancham (Pa)',
+              weakestSwara: res.data.weakest_swara || 'Gandhar (Ga)'
+            });
+            if (res.data.recent_trend && res.data.recent_trend.length > 0) {
+              setTrendData(res.data.recent_trend);
+            } else {
+              setTrendData(SAMPLE_TREND_DATA);
+            }
+          }
+        })
+        .catch(() => {
+          setTrendData(SAMPLE_TREND_DATA);
+        });
+    } else {
+      setStats({
+        totalMinutes: 0,
+        sessionsCount: 0,
+        currentStreak: 0,
+        bestScore: 0,
+        strongestSwara: '--',
+        weakestSwara: '--'
       });
-  }, []);
+      setTrendData([]);
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
@@ -77,21 +98,21 @@ export default function ProgressPage() {
               <TrendingUp className="w-3.5 h-3.5" />
               <span>Riyaz Longitudinal Analytics</span>
             </div>
-            <h1 className="text-3xl font-extrabold text-white font-serif tracking-tight">
+            <h1 className="text-3xl font-extrabold text-slate-900 font-serif tracking-tight">
               Progress & Vocal Mastery
             </h1>
           </div>
 
           {/* Time range selector */}
-          <div className="flex items-center gap-1 bg-[#090D16] p-1 rounded-xl border border-gray-800">
+          <div className="flex items-center gap-1 bg-amber-50 p-1 rounded-xl border border-amber-200">
             {(['7d', '30d', '90d', 'all'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase transition-all ${
                   timeRange === range
-                    ? 'bg-amber-500 text-black shadow'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {range}
@@ -99,6 +120,28 @@ export default function ProgressPage() {
             ))}
           </div>
         </div>
+
+        {!user && (
+          <div className="mb-8 p-5 rounded-3xl bg-amber-50 border border-amber-300 text-slate-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shrink-0">
+                <Flame className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm">Longitudinal Analytics for Registered Sadhaks</h3>
+                <p className="text-slate-600 mt-0.5">Sign in to record your practice sessions, maintain streaks, and view longitudinal pitch trajectories.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/login" className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition">
+                Sign In
+              </Link>
+              <Link href="/register" className="px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-bold text-xs shadow-2xs transition">
+                Create Account
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Top 4 Stat Metric Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

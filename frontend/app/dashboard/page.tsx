@@ -12,7 +12,7 @@ import {
   Radio, Disc, Search, Download, Sliders, ChevronRight, Info, AlertTriangle, Wand2, Compass
 } from 'lucide-react';
 import { useSwaraStore } from '@/lib/store';
-import { chatApi, audioApi, analysisApi } from '@/lib/api';
+import { chatApi, audioApi, analysisApi, progressApi } from '@/lib/api';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 // Recharts imports for pitch contour
@@ -493,6 +493,33 @@ const DEMO_PHRASES = [
 function DashboardContent() {
   const searchParams = useSearchParams();
   const { user } = useSwaraStore();
+
+  const [summary, setSummary] = useState<any>(null);
+  const [recentSessions, setRecentSessions] = useState<any[]>([]);
+  const [isLoadingProgress, setIsLoadingProgress] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (user) {
+      setIsLoadingProgress(true);
+      Promise.all([
+        progressApi.getSummary(),
+        progressApi.getHistory()
+      ]).then(([summaryRes, historyRes]) => {
+        if (summaryRes?.data) setSummary(summaryRes.data);
+        if (historyRes?.data && Array.isArray(historyRes.data)) {
+          setRecentSessions(historyRes.data.slice(0, 5));
+        }
+      }).catch((err) => {
+        console.warn("Failed to fetch dashboard progress:", err);
+      }).finally(() => {
+        setIsLoadingProgress(false);
+      });
+    } else {
+      setSummary(null);
+      setRecentSessions([]);
+      setIsLoadingProgress(false);
+    }
+  }, [user]);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'analyzer' | 'song_detective' | 'generator' | 'chat' | 'shrutis'>('overview');
   const [selectedTonic, setSelectedTonic] = useState("C#3");
@@ -1519,11 +1546,15 @@ function DashboardContent() {
           <div className="pt-2 border-t border-amber-100 text-[11px] text-slate-600 space-y-1">
             <div className="flex justify-between">
               <span>Riyaz Score:</span>
-              <span className="text-amber-700 font-bold">{analysisResult?.overall_score || 0}/100</span>
+              <span className="text-amber-700 font-bold">
+                {analysisResult?.overall_score ? `${analysisResult.overall_score}/100` : user && summary?.best_score ? `${Math.round(summary.best_score)}/100` : '--'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Shruti Alignment:</span>
-              <span className="text-emerald-700 font-semibold">±{analysisResult?.shruti_deviation || 0} cents</span>
+              <span className="text-emerald-700 font-semibold">
+                {analysisResult?.shruti_deviation ? `±${analysisResult.shruti_deviation} cents` : user && summary?.average_shruti_precision ? `±${summary.average_shruti_precision.toFixed(1)} cents` : '--'}
+              </span>
             </div>
           </div>
         </div>
@@ -1542,24 +1573,56 @@ function DashboardContent() {
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-amber-900 text-xs font-mono font-medium mb-2">
                     <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                    <span>Daily Classical Sadhana</span>
+                    <span>{user ? "Daily Classical Sadhana" : "Classical Vocal Studio & AI Guru"}</span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif tracking-tight">
-                    Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {user?.name || 'Om'}.
+                    {user
+                      ? `Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, ${user.name}.`
+                      : "Welcome to SwaraGPT"}
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                    Your Riyaz streak is <strong className="text-amber-700 font-bold">6 days unbroken</strong>. Current target raga: <strong className="text-slate-800">Raga Yaman</strong>.
+                    {user ? (
+                      <>
+                        Your Riyaz streak is <strong className="text-amber-700 font-bold">{summary?.current_streak_days ?? user?.profile?.current_streak_days ?? 0} days unbroken</strong>. Current target raga: <strong className="text-slate-800">{summary?.target_raga || user?.profile?.target_ragas?.[0] || 'Raga Yaman'}</strong>.
+                      </>
+                    ) : (
+                      "Sign in to maintain your personal Riyaz history, practice streaks, and AI-grounded 22-shruti feedback."
+                    )}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Link
-                    href="/practice"
-                    className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 hover:scale-105 transition-all flex items-center gap-1.5"
-                  >
-                    <Mic className="w-4 h-4" />
-                    <span>Start Today&apos;s Riyaz</span>
-                  </Link>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {user ? (
+                    <Link
+                      href="/practice"
+                      className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 hover:scale-105 transition-all flex items-center gap-1.5"
+                    >
+                      <Mic className="w-4 h-4" />
+                      <span>Start Today&apos;s Riyaz</span>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        href="/register"
+                        className="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-bold text-xs shadow-2xs transition-all"
+                      >
+                        Get Started
+                      </Link>
+                      <Link
+                        href="/practice"
+                        className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5"
+                      >
+                        <Mic className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Practice as Guest</span>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -1571,8 +1634,12 @@ function DashboardContent() {
                   <span className="text-[11px] font-mono text-slate-500 font-semibold">Today&apos;s Riyaz</span>
                   <Clock className="w-4 h-4 text-amber-600" />
                 </div>
-                <div className="text-xl font-bold font-mono text-slate-900">25 mins</div>
-                <div className="text-[10px] text-emerald-700 font-medium mt-0.5">Goal: 30 mins</div>
+                <div className="text-xl font-bold font-mono text-slate-900">
+                  {user ? `${summary?.today_minutes ?? summary?.total_practice_minutes ?? 0} mins` : '0 mins'}
+                </div>
+                <div className="text-[10px] text-emerald-700 font-medium mt-0.5">
+                  {user ? `Goal: ${user?.profile?.daily_goal_minutes || 30} mins` : 'Sign in to track'}
+                </div>
               </div>
 
               <div className="bg-white/90 p-4 rounded-2xl border border-amber-200/80 shadow-xs">
@@ -1580,8 +1647,12 @@ function DashboardContent() {
                   <span className="text-[11px] font-mono text-slate-500 font-semibold">Current Streak</span>
                   <Award className="w-4 h-4 text-rose-600" />
                 </div>
-                <div className="text-xl font-bold font-mono text-rose-600">6 Days</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Top 5% consistency</div>
+                <div className="text-xl font-bold font-mono text-rose-600">
+                  {user ? `${summary?.current_streak_days ?? user?.profile?.current_streak_days ?? 0} Days` : '0 Days'}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">
+                  {user ? (summary?.current_streak_days ? 'Active sadhana streak' : 'Start your streak today') : 'Sign in to track'}
+                </div>
               </div>
 
               <div className="bg-white/90 p-4 rounded-2xl border border-amber-200/80 shadow-xs">
@@ -1589,8 +1660,12 @@ function DashboardContent() {
                   <span className="text-[11px] font-mono text-slate-500 font-semibold">Avg Pitch Accuracy</span>
                   <Activity className="w-4 h-4 text-emerald-600" />
                 </div>
-                <div className="text-xl font-bold font-mono text-emerald-700">86.4%</div>
-                <div className="text-[10px] text-emerald-700 font-medium mt-0.5">+4.2% this week</div>
+                <div className="text-xl font-bold font-mono text-emerald-700">
+                  {user && summary?.average_pitch_accuracy ? `${summary.average_pitch_accuracy.toFixed(1)}%` : '--%'}
+                </div>
+                <div className="text-[10px] text-emerald-700 font-medium mt-0.5">
+                  {user && summary?.overall_improvement_pct ? `+${summary.overall_improvement_pct}% overall` : user ? 'Longitudinal score' : 'Sign in to track'}
+                </div>
               </div>
 
               <div className="bg-white/90 p-4 rounded-2xl border border-amber-200/80 shadow-xs">
@@ -1598,8 +1673,12 @@ function DashboardContent() {
                   <span className="text-[11px] font-mono text-slate-500 font-semibold">Latest Performance</span>
                   <Sparkles className="w-4 h-4 text-amber-600" />
                 </div>
-                <div className="text-xl font-bold font-mono text-amber-800">84.5% (Uttam)</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Raga Yaman Aroha</div>
+                <div className="text-xl font-bold font-mono text-amber-800">
+                  {user && recentSessions.length > 0 ? `${Math.round(recentSessions[0].overall_score || recentSessions[0].pitch_accuracy || 0)}%` : '--'}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">
+                  {user && recentSessions.length > 0 ? `Raga ${recentSessions[0].target_raga || recentSessions[0].raga_name || 'Classical'}` : user ? 'No sessions yet' : 'Guest mode'}
+                </div>
               </div>
             </div>
 
@@ -1654,37 +1733,84 @@ function DashboardContent() {
             <div className="bg-white/90 rounded-2xl border border-amber-200/80 shadow-xs overflow-hidden">
               <div className="p-4 bg-amber-50/70 border-b border-amber-200/80 flex items-center justify-between text-xs">
                 <span className="font-bold text-slate-900">Recent Riyaz Sessions</span>
-                <Link href="/history" className="text-amber-800 hover:underline font-mono font-semibold">
-                  View All History →
-                </Link>
+                {user && recentSessions.length > 0 && (
+                  <Link href="/history" className="text-amber-800 hover:underline font-mono font-semibold">
+                    View All History →
+                  </Link>
+                )}
               </div>
 
-              <div className="divide-y divide-amber-100">
-                {[
-                  { date: "Yesterday, 7:30 PM", raga: "Yaman", dur: "180s", pitch: 86, swara: 82, overall: 84.5 },
-                  { date: "Oct 6, 8:15 AM", raga: "Bhairav", dur: "120s", pitch: 78, swara: 74, overall: 76.2 },
-                  { date: "Oct 4, 8:00 PM", raga: "Bhupali", dur: "240s", pitch: 92, swara: 89, overall: 91.0 },
-                ].map((s, idx) => (
-                  <div key={idx} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div>
-                      <div className="font-bold text-slate-900 font-serif">Raga {s.raga}</div>
-                      <div className="text-slate-500 font-mono text-[11px]">{s.date} • {s.dur}</div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="font-mono">
-                        <span className="text-slate-500">Score: </span>
-                        <strong className="text-emerald-700">{s.overall}%</strong>
+              {user ? (
+                recentSessions.length > 0 ? (
+                  <div className="divide-y divide-amber-100">
+                    {recentSessions.map((s, idx) => (
+                      <div key={s.id || idx} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div>
+                          <div className="font-bold text-slate-900 font-serif">Raga {s.target_raga || s.raga_name || 'Classical'}</div>
+                          <div className="text-slate-500 font-mono text-[11px]">
+                            {s.created_at ? new Date(s.created_at).toLocaleString() : 'Recent session'} • {Math.round(s.duration_seconds || 0)}s
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="font-mono">
+                            <span className="text-slate-500">Score: </span>
+                            <strong className="text-emerald-700">{Math.round(s.overall_score || s.pitch_accuracy || 0)}%</strong>
+                          </div>
+                          <Link
+                            href={`/analyze/${s.id}`}
+                            className="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-medium text-xs hover:bg-amber-50 transition"
+                          >
+                            View Report
+                          </Link>
+                        </div>
                       </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center space-y-3">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
+                      <Music className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-serif text-slate-800 font-bold text-base">No Riyaz Sessions Recorded Yet</h3>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      Start your first vocal practice session in the Vocal Practice studio or record in the Analyzer to track your personal performance over time.
+                    </p>
+                    <div className="pt-2">
                       <Link
-                        href={`/analyze/demo-${idx + 1}`}
-                        className="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-medium text-xs hover:bg-amber-50 transition"
+                        href="/practice"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 text-white font-bold text-xs shadow-sm hover:bg-amber-700 transition"
                       >
-                        View Report
+                        <Mic className="w-4 h-4" />
+                        <span>Start Practice</span>
                       </Link>
                     </div>
                   </div>
-                ))}
-              </div>
+                )
+              ) : (
+                <div className="p-8 text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
+                    <Shield className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-serif text-slate-800 font-bold text-base">Personalized Practice History</h3>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    Every student has their own private Riyaz history, pitch accuracy trajectories, and 22-shruti intonation tracking. Sign in or create an account to view and save your sessions.
+                  </p>
+                  <div className="flex items-center justify-center gap-3 pt-2">
+                    <Link
+                      href="/login"
+                      className="px-4 py-2 rounded-xl bg-amber-600 text-white font-bold text-xs shadow-sm hover:bg-amber-700 transition"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="px-4 py-2 rounded-xl bg-amber-100 text-amber-950 border border-amber-300 font-bold text-xs hover:bg-amber-200 transition"
+                    >
+                      Create Account
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>

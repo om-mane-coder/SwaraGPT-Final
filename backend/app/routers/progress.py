@@ -22,16 +22,33 @@ async def get_progress_summary(
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    """Retrieve high-level dashboard and progress metrics for the student."""
-    user_id = current_user.id if current_user else 1
-    user_name = current_user.name if current_user else "Om Mane"
+    """Retrieve high-level dashboard and progress metrics for the authenticated student."""
+    if not current_user:
+        return {
+            "user_name": "Guest Sadhak",
+            "current_streak_days": 0,
+            "total_practice_minutes": 0,
+            "total_sessions_completed": 0,
+            "overall_improvement_pct": 0.0,
+            "average_pitch_accuracy": 0.0,
+            "average_swara_accuracy": 0.0,
+            "average_shruti_precision": 0.0,
+            "best_score": 0.0,
+            "weakest_swara": "None",
+            "strongest_swara": "None",
+            "target_raga": "Yaman",
+            "recent_trend": [],
+        }
+
+    user_id = current_user.id
+    user_name = current_user.name
 
     # Fetch user profile
     stmt_prof = select(UserProfile).where(UserProfile.user_id == user_id)
     res_prof = await db.execute(stmt_prof)
     profile = res_prof.scalar_one_or_none()
 
-    # Fetch all practice sessions
+    # Fetch user's practice sessions
     stmt_sess = select(PracticeSession).where(PracticeSession.user_id == user_id).order_by(PracticeSession.created_at.asc())
     res_sess = await db.execute(stmt_sess)
     sessions = res_sess.scalars().all()
@@ -54,12 +71,12 @@ async def get_progress_summary(
         improvement_pct = round(float(max(0.0, latest_score - first_score)), 1)
         total_mins = int(sum(s.duration_seconds for s in sessions) / 60)
     else:
-        avg_pitch = 82.0
-        avg_swara = 80.5
-        avg_shruti = 79.0
-        best_score = 86.4
-        improvement_pct = 12.5
-        total_mins = 245
+        avg_pitch = 0.0
+        avg_swara = 0.0
+        avg_shruti = 0.0
+        best_score = 0.0
+        improvement_pct = 0.0
+        total_mins = 0
 
     # Build 7-day trend
     now = datetime.now(timezone.utc)
@@ -95,9 +112,9 @@ async def get_progress_summary(
 
     return {
         "user_name": user_name,
-        "current_streak_days": profile.current_streak_days if profile else 7,
-        "total_practice_minutes": max(total_mins, profile.total_practice_minutes if profile else 180),
-        "total_sessions_completed": max(total_sessions, 4),
+        "current_streak_days": profile.current_streak_days if profile else 0,
+        "total_practice_minutes": total_mins,
+        "total_sessions_completed": total_sessions,
         "overall_improvement_pct": improvement_pct,
         "average_pitch_accuracy": avg_pitch,
         "average_swara_accuracy": avg_swara,
@@ -115,9 +132,10 @@ async def get_practice_history(
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    """Retrieve full practice history log."""
-    user_id = current_user.id if current_user else 1
-    stmt = select(PracticeSession).where(PracticeSession.user_id == user_id).order_by(PracticeSession.created_at.desc())
+    """Retrieve full practice history log strictly for the current authenticated user."""
+    if not current_user:
+        return []
+    stmt = select(PracticeSession).where(PracticeSession.user_id == current_user.id).order_by(PracticeSession.created_at.desc())
     res = await db.execute(stmt)
     sessions = res.scalars().all()
     return sessions
