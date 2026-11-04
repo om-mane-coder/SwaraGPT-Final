@@ -49,64 +49,30 @@ export default function DashboardPage() {
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
-        {/* Greeting Header */}
-        <div className="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-amber-200/80 shadow-sm relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-amber-900 text-xs font-mono font-medium mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                <span>{user ? "Daily Classical Sadhana" : "Classical Vocal Studio & AI Guru"}</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif tracking-tight">
-                {user
-                  ? `Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, ${user.name}.`
-                  : "Welcome to SwaraGPT"}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
-                {user ? (
-                  <>
-                    Your Riyaz streak is <strong className="text-amber-700 font-bold">{summary?.current_streak_days ?? user?.profile?.current_streak_days ?? 0} days unbroken</strong>. Current target raga: <strong className="text-slate-800">{summary?.target_raga || user?.profile?.target_ragas?.[0] || 'Raga Yaman'}</strong>.
-                  </>
-                ) : (
-                  "Sign in to maintain your personal Riyaz history, practice streaks, and AI-grounded 22-shruti feedback."
-                )}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2.5 flex-wrap shrink-0">
+        {/* Clean Page Title Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif tracking-tight">
+              {user ? `Namaste, ${user.name}` : "Sadhana Progress"}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
               {user ? (
-                <Link
-                  href="/practice"
-                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <Mic className="w-4 h-4" />
-                  <span>Start Today&apos;s Riyaz</span>
-                </Link>
-              ) : (
                 <>
-                  <Link
-                    href="/login"
-                    className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-bold text-xs shadow-2xs transition-all"
-                  >
-                    Get Started
-                  </Link>
-                  <Link
-                    href="/practice"
-                    className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5"
-                  >
-                    <Mic className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Practice as Guest</span>
-                  </Link>
+                  Streak: <strong className="text-amber-800 font-semibold">{summary?.current_streak_days ?? user?.profile?.current_streak_days ?? 0} days unbroken</strong> • Target: <strong className="text-slate-800">{summary?.target_raga || user?.profile?.target_ragas?.[0] || 'Raga Yaman'}</strong>
                 </>
+              ) : (
+                "Vocal intonation statistics, practice streaks, and longitudinal session history."
               )}
-            </div>
+            </p>
           </div>
+
+          <Link
+            href="/practice"
+            className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2 w-fit shrink-0"
+          >
+            <Mic className="w-4 h-4" />
+            <span>Start Riyaz Practice</span>
+          </Link>
         </div>
 
         {/* Top Stat Cards: Simple, Focused, Uncluttered */}
