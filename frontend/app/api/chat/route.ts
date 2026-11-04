@@ -32,11 +32,14 @@ export async function POST(req: NextRequest) {
     ].some(w => pLower.includes(w));
 
     // SYSTEM PROMPT FOR EXTERNAL LLM PROVIDERS
-    const systemPrompt = `You are SwaraGPT's Virtual Guru, a master vocalist and scholar in Indian Classical Music (Hindustani and Carnatic).
-Answer the student's question directly, accurately, warmly, and with deep musicological authority (like a knowledgeable AI tutor).
-Adhere strictly to any formatting constraints the user requests (e.g. 'in 5 points', 'in 10 lines', 'step by step').
-Include exact swaras, pakad phrases, or rhythmic bols where relevant.
-Do NOT give unprompted critique about singing telemetry or pitch errors unless the user explicitly asks about their singing performance.`;
+    const systemPrompt = `You are SwaraGPT's Virtual Guru, a master vocalist and authentic scholar in Indian Classical Music (Hindustani and Carnatic).
+You are fluent in English, Marathi (मराठी), and Hindi (हिंदी).
+- If the user asks to speak or talk in Marathi, reply fluently, warmly, and authentically in Marathi (मराठी).
+- If the user asks in Hindi, reply in Hindi.
+- Always directly answer the user's actual prompt conversationally, intelligently, and with pedagogical warmth (like ChatGPT).
+- Adhere strictly to any formatting constraints the user requests (e.g., 'in 2 lines', 'in 5 points').
+- Include exact swaras, pakad phrases, or rhythmic bols where relevant.
+- Do NOT give unprompted critique about singing telemetry or pitch errors unless the user explicitly asks about their own singing performance.`;
 
     // TIER 1A: GOOGLE GEMINI CLOUD AI (If key present)
     if (userGeminiKey && !responseText) {
@@ -135,9 +138,9 @@ Do NOT give unprompted critique about singing telemetry or pitch errors unless t
               { role: 'user', content: userPrompt }
             ],
             temperature: 0.3,
-            max_tokens: 1024
+            max_tokens: 700
           }),
-          signal: AbortSignal.timeout(4000)
+          signal: AbortSignal.timeout(20000)
         });
 
         if (nvidiaRes.ok) {
@@ -206,6 +209,38 @@ function generateAdvancedMusicologyResponse(query: string, context: any): {
   thought: string;
 } {
   const q = query.toLowerCase().trim();
+
+  // LANGUAGE SELECTION (MARATHI)
+  if (q.includes('marathi') || q.includes('मराठी')) {
+    return {
+      text: `🙏 **नमस्कार, साधक!**\n\nहोय, नक्कीच! मी तुमच्याशी मराठीत बोलू शकतो.\n\nमी **SwaraGPT व्हर्च्युअल गुरू** आहे — भारतीय शास्त्रीय संगीताचा तुमचा डिजिटल मार्गदर्शक.\n\nतुम्हाला संगीतातील कोणत्या विषयावर चर्चा करायची आहे?\n- 🎼 **रागांची माहिती:** यमन, भैरव, भूप, दरबारी, मालकंस, तोडी आदी रागांचे आरोह-अवरोह, वादी-संवादी आणि पकड.\n- 🧘 **रियाज व स्वर साधना:** खर्ज साधना (Mandra Sadhana), ओंकार, आणि कंठ संस्कार.\n- 📐 **२२ श्रुती व स्वरशास्त्र:** स्वरांची सूक्ष्म स्थाने आणि गणिती प्रमाण.\n- 🥁 **ताल व लय:** त्रिताल, झपताल, रूपक, एकताल.\n\nआज आपण कोणत्या रागाचा किंवा रियाजाचा सराव करायचा आहे?`,
+      citations: [
+        { title: "संगीत रत्नाकर", source: "शारंगदेव", tradition: "भारतीय शास्त्रीय संगीत" }
+      ],
+      drills: [
+        "राग यमनचे आरोह-अवरोह आणि पकड सांगा",
+        "सकाळी खर्ज साधना कशी करावी?",
+        "२२ श्रुतींबद्दल सविस्तर माहिती द्या"
+      ],
+      thought: "User requested dialogue in Marathi. Responded fluently in authentic Marathi with classical music terminology."
+    };
+  }
+
+  // LANGUAGE SELECTION (HINDI)
+  if (q.includes('hindi') || q.includes('हिंदी')) {
+    return {
+      text: `🙏 **नमस्ते, साधक!**\n\nहाँ, बिल्कुल! मैं आपसे हिंदी में बात कर सकता हूँ।\n\nमैं आपका **SwaraGPT वर्चुअल गुरु** हूँ। भारतीय शास्त्रीय संगीत के राग, 22 श्रुतियों, रियाज़ या आलाप-तान के बारे में आप क्या जानना चाहते हैं?\n\nआप मुझसे पूछ सकते हैं:\n- 🎼 **राग परिचय:** यमन, भैरव, भैरवी, भूपाली आदि के आरोह-अवरोह, वादी-संवादी और पकड़।\n- 🧘 **रियाज़ पद्धति:** सुबह की खरज साधना, ओंकार साधना और तानपुरा ट्यूनिंग।\n- 📐 **22 श्रुति विज्ञान:** सूक्ष्म स्वर और उनके अनुपात।\n\nबताइए, आज आप किस राग या संगीत के विषय पर चर्चा करना चाहते हैं?`,
+      citations: [
+        { title: "भातखंडे क्रमिक पुस्तक मालिका", source: "पं. वि. ना. भातखंडे", tradition: "हिंदुस्तानी शास्त्रीय संगीत" }
+      ],
+      drills: [
+        "राग यमन की संपूर्ण व्याकरण समझाइए",
+        "खरज साधना करने की सही विधि क्या है?",
+        "22 श्रुतियों के नाम और उनके स्वर बताएं"
+      ],
+      thought: "User requested dialogue in Hindi. Responded fluently in Hindi with classical music terminology."
+    };
+  }
 
   // 1. GREETINGS & CASUAL INTERACTION
   if (['hi', 'hello', 'hey', 'namaste', 'pranam', 'namaskar', 'pranaam', 'good morning', 'good evening'].some(w => q.startsWith(w)) && q.split(/\s+/).length <= 4) {

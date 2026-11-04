@@ -69,7 +69,7 @@ export const chatApi = {
     try {
       const localRes = await axios.post('/api/chat', { message, performance_context, model, api_key: apiKey }, {
         headers: apiKey ? { 'x-api-key': apiKey } : {},
-        timeout: 6000,
+        timeout: 20000,
       });
       if (localRes?.data && (localRes.data.content || localRes.data.response || localRes.data.reply || localRes.data.message)) {
         return localRes;
@@ -82,7 +82,7 @@ export const chatApi = {
     try {
       const backendRes = await api.post('/chat', { message, performance_context, model }, {
         headers: apiKey ? { 'x-api-key': apiKey } : {},
-        timeout: 6000,
+        timeout: 20000,
       });
       if (backendRes?.data) {
         return backendRes;
