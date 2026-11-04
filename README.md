@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black.svg?style=flat&logo=next.js)](https://nextjs.org)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat&logo=python)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fom-mane-coder%2FSwaraGPT&root-directory=frontend)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fom-mane-coder%2FSwaraGPT-Final&root-directory=frontend)
 
 SwaraGPT is an AI-powered virtual music guru designed specifically for students, self-learners, and Indian Classical Music enthusiasts across both Hindustani and Carnatic traditions.
 
@@ -143,9 +143,9 @@ SwaraGPT integrates verified, open-access datasets from Music Information Retrie
 
 Anyone can deploy and run SwaraGPT on Vercel with a single click:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fom-mane-coder%2FSwaraGPT&root-directory=frontend)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fom-mane-coder%2FSwaraGPT-Final&root-directory=frontend)
 
-* **Repository:** `https://github.com/om-mane-coder/SwaraGPT`
+* **Repository:** `https://github.com/om-mane-coder/SwaraGPT-Final`
 * **Root Directory:** `frontend`
 * **Framework:** Next.js 16 (App Router)
 * **Environment Variable:** `NEXT_PUBLIC_API_URL` (optional, for connecting a remote backend instance)
@@ -156,8 +156,8 @@ Anyone can deploy and run SwaraGPT on Vercel with a single click:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/swara-gpt.git
-cd swara-gpt
+git clone https://github.com/om-mane-coder/SwaraGPT-Final.git
+cd SwaraGPT-Final
 
 # Copy environment template
 cp .env.example .env
