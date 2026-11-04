@@ -49,32 +49,6 @@ export default function DashboardPage() {
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
-        {/* Clean Page Title Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif tracking-tight">
-              {user ? `Namaste, ${user.name}` : "Sadhana Progress"}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              {user ? (
-                <>
-                  Streak: <strong className="text-amber-800 font-semibold">{summary?.current_streak_days ?? user?.profile?.current_streak_days ?? 0} days unbroken</strong> • Target: <strong className="text-slate-800">{summary?.target_raga || user?.profile?.target_ragas?.[0] || 'Raga Yaman'}</strong>
-                </>
-              ) : (
-                "Vocal intonation statistics, practice streaks, and longitudinal session history."
-              )}
-            </p>
-          </div>
-
-          <Link
-            href="/practice"
-            className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2 w-fit shrink-0"
-          >
-            <Mic className="w-4 h-4" />
-            <span>Start Riyaz Practice</span>
-          </Link>
-        </div>
-
         {/* Top Stat Cards: Simple, Focused, Uncluttered */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white/90 p-5 rounded-2xl border border-amber-200/80 shadow-xs">
