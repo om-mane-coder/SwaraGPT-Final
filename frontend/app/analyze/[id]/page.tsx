@@ -359,67 +359,6 @@ function PerformanceReportContent() {
           </div>
         </div>
 
-        {/* Master Comparison Card */}
-        {masterComparison && (
-          <div className="bg-gradient-to-br from-amber-500/5 via-white to-amber-500/10 p-6 rounded-3xl border-2 border-amber-300 shadow-md mb-8 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200">
-              <div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold uppercase tracking-wider">
-                  Canonical Master Benchmark
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-1.5">
-                  {masterComparison.master_song?.title} — {masterComparison.master_song?.singer}
-                </h3>
-                <p className="text-xs text-slate-600">
-                  Raga {masterComparison.master_song?.raga} • {masterComparison.master_song?.composer} • {masterComparison.master_song?.canonical_bpm} BPM ({masterComparison.master_song?.tala})
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-slate-500 block">Master Fidelity Match</span>
-                <span className="text-3xl font-black text-amber-700 font-mono">
-                  {masterComparison.fidelity_scores?.overall_match}%
-                </span>
-              </div>
-            </div>
-
-            {/* Matrix table */}
-            <div className="overflow-x-auto bg-white/90 rounded-2xl border border-amber-200">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-amber-50/70 text-slate-700 font-semibold border-b border-amber-200">
-                    <th className="py-2.5 px-4">Feature</th>
-                    <th className="py-2.5 px-4">Your Sung Riyaz</th>
-                    <th className="py-2.5 px-4">Canonical Master Benchmark</th>
-                    <th className="py-2.5 px-4">Fidelity %</th>
-                    <th className="py-2.5 px-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-amber-100">
-                  {(masterComparison.comparative_matrix || []).map((row: any, i: number) => (
-                    <tr key={i} className="hover:bg-amber-50/30">
-                      <td className="py-2.5 px-4 font-medium text-slate-900">{row.feature}</td>
-                      <td className="py-2.5 px-4 font-mono font-semibold text-amber-900">{row.user_val}</td>
-                      <td className="py-2.5 px-4 text-slate-600">{row.master_val}</td>
-                      <td className="py-2.5 px-4 font-bold text-emerald-700">{row.fidelity}</td>
-                      <td className="py-2.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                          {row.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {masterComparison.master_critique && (
-              <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs sm:text-sm text-slate-800 leading-relaxed font-sans shadow-2xs">
-                <MarkdownRenderer content={masterComparison.master_critique} />
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Score & Pitch Contour Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           
