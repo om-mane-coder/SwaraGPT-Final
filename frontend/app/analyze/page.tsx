@@ -267,48 +267,6 @@ export default function AnalyzePage() {
           </p>
         </div>
 
-        {/* Target Raga & Tonic Selection */}
-        <div className="bg-white p-5 rounded-2xl border border-amber-900/10 shadow-xs mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-              Target Raga:
-            </label>
-            <select
-              value={targetRaga}
-              onChange={(e) => setTargetRaga(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-600 focus:bg-white transition-colors"
-            >
-              {['Yaman', 'Bhairav', 'Bhairavi', 'Bhupali', 'Bageshri', 'Darbari Kanada', 'Malkauns', 'Kafi', 'Todi', 'Marwa', 'Desh', 'Hamsadhwani'].map((r) => (
-                <option key={r} value={r}>Raga {r}</option>
-              ))}
-            </select>
-            <span className="text-[11px] text-slate-400 mt-1 block">
-              Evaluates swara grammar & shruti intonation.
-            </span>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-              Sa Tonic Reference (Hz):
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                value={tonicHz}
-                step="0.1"
-                onChange={(e) => setTonicHz(parseFloat(e.target.value) || 130.81)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:border-amber-600 focus:bg-white transition-colors"
-              />
-              <span className="text-[11px] font-mono text-slate-500 shrink-0 bg-slate-100 px-2 py-1.5 rounded-lg">
-                {tonicHz < 150 ? 'Male (~C3)' : 'Female (~G#3)'}
-              </span>
-            </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">
-              Fundamental Sa pitch reference frequency.
-            </span>
-          </div>
-        </div>
-
         {/* Audio Recorder & Uploader Component */}
         {!isProcessing ? (
           <AudioRecorder
