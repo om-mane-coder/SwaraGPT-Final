@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Sparkles, Music, Mic, BookOpen, Activity, User, LogOut, 
-  Settings, History, Menu, X, Compass, Award, Disc 
+  Settings, History, Menu, X, Compass, Award 
 } from 'lucide-react';
 import { useSwaraStore } from '@/lib/store';
 
@@ -21,7 +21,6 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/analyze', label: 'Vocal Practice', icon: Mic },
-    { href: '/riyaz', label: 'Riyaz Studio', icon: Disc },
     { href: '/chat', label: 'Virtual Guru', icon: Sparkles },
     { href: '/ragas', label: 'Ragas', icon: BookOpen },
     { href: '/dashboard', label: 'Progress', icon: Activity },
