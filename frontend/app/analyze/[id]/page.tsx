@@ -316,7 +316,7 @@ function PerformanceReportContent() {
                 </div>
               </div>
               <Link
-                href="/dashboard?tab=analyzer"
+                href="/analyze"
                 className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs hover:brightness-105 shadow-sm transition"
               >
                 Record Again
