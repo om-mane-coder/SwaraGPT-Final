@@ -116,13 +116,13 @@ class NvidiaNimProvider(AIProvider):
 
     def _resolve_model(self, model: Optional[str]) -> str:
         if not model:
-            return self.primary_model
+            return self.primary_model or "nvidia/nemotron-3-ultra-550b-a55b"
         m_lower = model.lower()
-        if "llama" in m_lower:
-            return "meta/llama-3.2-11b-vision-instruct"
-        elif "nemotron" in m_lower:
+        if "nemotron" in m_lower or "550b" in m_lower or "swaragpt" in m_lower:
             return "nvidia/nemotron-3-ultra-550b-a55b"
-        return self.primary_model
+        elif "llama" in m_lower:
+            return self.fast_model or "nvidia/nemotron-3-ultra-550b-a55b"
+        return self.primary_model or "nvidia/nemotron-3-ultra-550b-a55b"
 
     async def generate_response(
         self,
@@ -148,17 +148,30 @@ class NvidiaNimProvider(AIProvider):
                 client.chat.completions.create(
                     model=target_model,
                     messages=messages,
-                    temperature=0.4,
-                    max_tokens=2048,
+                    temperature=0.3,
+                    max_tokens=1024,
                 ),
-                timeout=30.0
+                timeout=18.0
             )
             choice = res.choices[0].message
             content = choice.content or ""
             thought = getattr(choice, "reasoning_content", None)
-            if not content and thought:
-                content = thought
+
+            # Cleanly strip and isolate thinking markers from visible content
+            if "<think>" in content and "</think>" in content:
+                parts = content.split("</think>")
+                thought = ((thought or "") + "\n" + parts[0].replace("<think>", "").strip()).strip()
+                content = parts[1].strip()
+            elif content.startswith("Here's a thinking process:"):
+                marker = re.search(r'\n\n(?=[#*A-Za-z0-9])', content)
+                if marker:
+                    thought = ((thought or "") + "\n" + content[:marker.start()].strip()).strip()
+                    content = content[marker.end():].strip()
+
+            if not content.strip() and thought:
+                content = thought.strip()
                 thought = None
+
             if content.strip():
                 return {
                     "content": content.strip(),

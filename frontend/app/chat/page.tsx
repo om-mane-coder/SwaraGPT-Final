@@ -366,6 +366,31 @@ How may I illuminate your musical path today? Feel free to ask a question or exp
       const thought = data?.thought || null;
       const modelUsed = data?.model || activeModelObj.name;
 
+      // Stream words smoothly like ChatGPT
+      const words = answer.split(/(\s+)/);
+      let streamed = '';
+      for (let i = 0; i < words.length; i++) {
+        if (abortController.signal.aborted) break;
+        streamed += words[i];
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === guruMsgId
+              ? {
+                  ...m,
+                  text: streamed,
+                  thought: thought || undefined,
+                  model: modelUsed,
+                  isStreaming: i < words.length - 1
+                }
+              : m
+          )
+        );
+        // Fast, smooth streaming pace (12ms per 2 words)
+        if (i % 2 === 0) {
+          await new Promise(r => setTimeout(r, 12));
+        }
+      }
+
       setMessages(prev =>
         prev.map(m =>
           m.id === guruMsgId
@@ -386,8 +411,8 @@ How may I illuminate your musical path today? Feel free to ask a question or exp
             : m
         )
       );
-    } catch (fallbackErr) {
-      console.error("Chat error:", fallbackErr);
+    } catch {
+      // Graceful fallback without triggering Next.js dev error overlay
       setMessages(prev =>
         prev.map(m =>
           m.id === guruMsgId

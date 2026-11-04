@@ -121,6 +121,7 @@ Do NOT give unprompted critique about singing telemetry or pitch errors unless t
           ? `${message}\n\nRecent Practice Telemetry:\n- Raga: ${perfContext.raga || 'Yaman'}\n- Score: ${perfContext.overall_score || 80}%\n- Weak Notes: ${JSON.stringify(perfContext.weak_swaras || [])}`
           : message;
 
+        const nvidiaModel = process.env.NEMOTRON_PRIMARY_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b';
         const nvidiaRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -128,22 +129,29 @@ Do NOT give unprompted critique about singing telemetry or pitch errors unless t
             'Authorization': `Bearer ${userNvidiaKey}`
           },
           body: JSON.stringify({
-            model: 'nvidia/llama-3.1-nemotron-70b-instruct',
+            model: nvidiaModel,
             messages: [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userPrompt }
             ],
-            temperature: 0.4,
-            max_tokens: 1500
-          })
+            temperature: 0.3,
+            max_tokens: 1024
+          }),
+          signal: AbortSignal.timeout(4000)
         });
 
         if (nvidiaRes.ok) {
           const data = await nvidiaRes.json();
-          responseText = data?.choices?.[0]?.message?.content || '';
-          if (responseText) {
-            modelUsed = 'NVIDIA Nemotron 70B';
-            thought = `Reasoned through NVIDIA High-Throughput NIM.`;
+          const choice = data?.choices?.[0]?.message;
+          let content = choice?.content || '';
+          const reasoning = choice?.reasoning_content || '';
+          if (!content && reasoning) {
+            content = reasoning;
+          }
+          if (content) {
+            responseText = content.trim();
+            modelUsed = 'NVIDIA Nemotron 550B';
+            thought = reasoning ? reasoning.trim() : 'Reasoned through NVIDIA High-Throughput NIM with classical musicology grounding.';
           }
         }
       } catch (err) {
