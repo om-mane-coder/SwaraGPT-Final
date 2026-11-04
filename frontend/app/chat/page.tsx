@@ -449,62 +449,14 @@ How may I illuminate your musical path today? Feel free to ask a question or exp
     <div className="h-screen flex flex-col bg-[#FAF8F5] text-slate-900 font-sans selection:bg-amber-200 overflow-hidden">
       <Navbar />
 
-      <div className="flex-1 flex max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-6 py-3 gap-4 overflow-hidden min-h-0">
+      <div className="flex-1 flex max-w-6xl mx-auto w-full px-2 sm:px-4 lg:px-6 py-3 overflow-hidden min-h-0">
         
-        {/* Left Sidebar - Chat History */}
-        <aside className={`${
-          sidebarOpen ? 'w-64' : 'w-0'
-        } transition-all duration-300 ease-in-out shrink-0 bg-white rounded-2xl border border-amber-900/10 shadow-xs flex flex-col overflow-hidden hidden md:flex`}>
-          
-          {/* New Chat Button */}
-          <div className="p-3 border-b border-amber-900/10">
-            <button
-              onClick={startNewChat}
-              className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs py-2 px-3 rounded-xl transition-colors cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>New Conversation</span>
-            </button>
-          </div>
-
-          {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold px-2 py-1">
-              History
-            </div>
-            {conversations.map((conv) => (
-              <div
-                key={conv.id}
-                onClick={() => setActiveConvId(conv.id)}
-                className={`group flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer transition-colors ${
-                  activeConvId === conv.id
-                    ? 'bg-amber-100 text-amber-950 font-semibold'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${activeConvId === conv.id ? 'text-amber-700' : 'text-slate-400'}`} />
-                  <span className="truncate">{conv.title}</span>
-                </div>
-                <span className="text-[10px] text-slate-400 shrink-0 font-mono">{conv.timestamp}</span>
-              </div>
-            ))}
-          </div>
-        </aside>
-
         {/* Main Chat Workspace */}
         <main className="flex-1 flex flex-col bg-white rounded-2xl border border-amber-900/10 shadow-xs overflow-hidden relative">
           
-          {/* Top Bar: Model Selector & Sidebar Toggle */}
+          {/* Top Bar: Model Selector, API Key & New Chat */}
           <header className="px-4 py-2.5 border-b border-amber-900/10 flex items-center justify-between bg-white">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                title="Toggle Sidebar"
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-              </button>
 
               {/* Clean Model Selector */}
               <div className="relative">
@@ -558,9 +510,20 @@ How may I illuminate your musical path today? Feel free to ask a question or exp
               </button>
             </div>
 
-            {/* Subtle Status */}
-            <div className="text-[11px] font-mono text-slate-400">
-              Classical Shastras Grounded
+            {/* Right Header Actions */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={startNewChat}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-semibold transition cursor-pointer"
+                title="Start a new conversation"
+              >
+                <Plus className="w-3.5 h-3.5 text-amber-700" />
+                <span>New Chat</span>
+              </button>
+
+              <div className="text-[11px] font-mono text-slate-400 hidden sm:block">
+                Classical Shastras Grounded
+              </div>
             </div>
           </header>
 
